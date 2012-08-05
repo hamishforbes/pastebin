@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1>{{ data.user }}</h1>	
+
+<ul>
+	{% for paste in data.pastes -%}
+		<li><a href="/paste/{{ paste.id }}/">{{ paste.title }}</a>
+	{%- endfor %}
+</ul>
+
+
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block content %}
+
+	<form method="POST" action="/paste/" class="well">
+		<label>Title</label>
+		<input type="text" name="title"/>
+
+		<label>Language</label>
+		<select name="lang">	
+			<option value="PHP">PHP</option>
+			<option value="CSS">CSS</option>
+			<option value="HTML">HTML</option>
+			<option value="JS">JS</option>
+		</select>
+
+		<label>Paste</label>
+		<div class="controls">
+              <textarea style="width: 500px; height: 200px" name="paste_content"></textarea>
+        </div>
+
+		<button type="submit" class="btn btn-primary">Paste</button>
+	</form>
+
+
+{% endblock %}

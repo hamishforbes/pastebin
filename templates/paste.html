@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 id="title">{{ paste.title }}</h1>
+<h4 id="user">by {{ paste.user }}</h2>
+<h5 id="posted">{{ paste.posted }}</h3>
+
+<pre id="paste" class="prettyprint linenums {{ paste.lang }}">
+{{ paste.paste_content }}
+</pre>
+	
+
+{% endblock %}
