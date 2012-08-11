@@ -38,13 +38,3 @@ def getUser(conn, user):
     except ldap.LDAPError, e:
         print 'ERROR:'
         print e
-
-if __name__ == "__main__":
-    import sys
-    username = 'cn=www.squiz.co.uk,ou=Applications,o=Squiz,c=uk,dc=squiz,dc=net'
-    password = 'Aeshoh2fog8yai1e'
-
-    globalConn = connect('ldap.squiz.co.uk')
-    bind(globalConn, username, password)
-
-    print getUser(globalConn, sys.argv[1])
