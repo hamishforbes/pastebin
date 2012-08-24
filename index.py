@@ -39,7 +39,7 @@ login_manager = LoginManager()
 # create the little application object
 app = Flask(__name__)
 app.secret_key = "asdfasdfsdafdsafdsji234u982343289"
-login_manager.setup_app(app)
+login_manager.init_app(app)
 login_manager.login_view = "login"
 
 @app.route('/')

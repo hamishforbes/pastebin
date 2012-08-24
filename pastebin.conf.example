@@ -3,7 +3,7 @@ host: localhost
 port: 27017
 
 [ldap]
-host: ldap.domain.com
+host: ldap://ldap.domain.com
 bind_dn: uid=bind,ou=user,dc=domain,dc=com
 password: 12345
 search_filter: (&(objectClass=Person)

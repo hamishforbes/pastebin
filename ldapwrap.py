@@ -2,12 +2,13 @@ import ldap
 
 def connect(host):
     try:
-        l = ldap.open(host)
+        l = ldap.initialize(host)
         l.protocol_version = ldap.VERSION3
         return l
     except ldap.LDAPError, e:
         print 'Connection fail: '+host
         print e
+        return 0
 
 
 def bind(conn, username, password):
