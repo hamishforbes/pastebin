@@ -2,12 +2,12 @@
 {% block content %}
 
 <h1 id="title">{{ paste.title }}</h1>
-<h4 id="user">by {{ paste.user }}</h2>
+<h4 id="user">by <a href="/user/{{ paste.user }}/">{{ paste.user }}</a></h2>
 <h5 id="posted">{{ paste.posted }}</h3>
 
-<pre id="paste" class="prettyprint linenums {{ paste.lang }}">
+<pre id="paste" class="prettyprint linenums ">
 {{ paste.paste_content }}
 </pre>
-	
+
 
 {% endblock %}

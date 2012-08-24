@@ -2,8 +2,7 @@ from flask import Flask, request, session, g, redirect, url_for, abort, render_t
 from pymongo import Connection, ASCENDING, DESCENDING
 from bson.objectid import ObjectId
 from flask_login import (LoginManager, current_user, login_required,
-                            login_user, logout_user, UserMixin, AnonymousUser,
-                            confirm_login, fresh_login_required)
+                            login_user, logout_user, UserMixin)
 import datetime
 import ConfigParser
 import ldapwrap
@@ -12,14 +11,27 @@ config = ConfigParser.RawConfigParser()
 config.read('pastebin.conf')
 
 #Mongo
-connection = Connection(config.get('mongodb', 'host'), config.getint('mongodb', 'port'))
+mongoHost = config.get('mongodb', 'host')
+mongoPort = config.getint('mongodb', 'port')
+print 'Connecting to MongoDB at '+mongoHost+':'+ str(mongoPort)
+connection = Connection(mongoHost, mongoPort)
 db = connection.pastebin
 print 'MongoDB Connected'
 
 #LDAP
-ldapConn = ldapwrap.connect(config.get('ldap', 'host'))
-ldapwrap.bind(ldapConn, config.get('ldap', 'bind_dn'), config.get('ldap', 'password'))
+ldapHost = config.get('ldap', 'host')
+ldapBindDN = config.get('ldap', 'bind_dn')
+ldapBindPass = config.get('ldap', 'password')
+search_filter = config.get('ldap', 'search_filter')
+base_dn = config.get('ldap', 'base_dn')
+
+print 'Connecting to ldap at '+ldapHost
+ldapConn = ldapwrap.connect(ldapHost)
 print 'LDAP Connected'
+print 'Binding to LDAP as: '+ldapBindDN
+ldapwrap.bind(ldapConn, ldapBindDN, ldapBindPass)
+print 'Ldap Bound'
+
 
 #login Manager
 login_manager = LoginManager()
@@ -41,7 +53,6 @@ def paste():
         #save paste to mongo
         paste = {"user": current_user.id,
                  "posted": datetime.datetime.utcnow(),
-                 "lang": request.form['lang'],
                  "title": request.form['title'],
                  "paste_content": request.form['paste_content']
                  }
@@ -84,15 +95,18 @@ def get_list(user):
 @app.route("/login", methods=["GET", "POST"])
 def login():
     global ldapConn
-    global host
+    global ldapHost
+    global search_filter
+    global base_dn
+
     if request.method == 'POST':
         #search ldap for the username
-        ldapuser = ldapwrap.getUser(ldapConn, request.form['user'])
+        ldapuser = ldapwrap.getUser(ldapConn, base_dn, search_filter, request.form['user'])
         if ldapuser != None:
             #found the user, try binding with that dn and supplied password
             #TODO: should just be able to auth against the password attrib?
 
-            tmpConn = ldapwrap.connect(host)
+            tmpConn = ldapwrap.connect(ldapHost)
             if ldapwrap.bind(tmpConn, ldapuser['dn'], request.form['pass']):
                 #succesfully bound, good password!
                 tmpConn.unbind()
@@ -118,11 +132,13 @@ def logout():
 def load_user(userid):
     #get from ldap!
     global ldapConn
-    ldapuser = ldapwrap.getUser(ldapConn, userid)
+    global search_filter
+    global base_dn
+
+    ldapuser = ldapwrap.getUser(ldapConn, base_dn, search_filter, userid)
     if ldapuser != None:
         return User(ldapuser['cn'][0], ldapuser['uid'][0], active=True)
     else:
-        print 'not loggedin '+userid
         return None
 
 
@@ -138,4 +154,4 @@ class User(UserMixin):
 
 if __name__ == "__main__":
     app.debug = True
-    app.run()
+    app.run(host='0.0.0.0')

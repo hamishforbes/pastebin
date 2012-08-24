@@ -19,11 +19,10 @@ def bind(conn, username, password):
         return 0
 
 
-def getUser(conn, user):
-    baseDN = "dc=squiz,dc=net"
+def getUser(conn, baseDN, searchFilter, user):
     searchScope = ldap.SCOPE_SUBTREE
     retrieveAttributes = ['uid', 'cn']
-    searchFilter = "(&(objectClass=Person)(ou=ou=Staff,o=*,c=*,dc=squiz,dc=net)(uid="+user+"))"
+    searchFilter += "(uid="+user+"))"
 
     try:
         result_set = conn.search_s(baseDN, searchScope, searchFilter, retrieveAttributes)
