@@ -24,14 +24,18 @@ ldapBindDN = config.get('ldap', 'bind_dn')
 ldapBindPass = config.get('ldap', 'password')
 search_filter = config.get('ldap', 'search_filter')
 base_dn = config.get('ldap', 'base_dn')
+ldapConn = None
 
-print 'Connecting to ldap at '+ldapHost
-ldapConn = ldapwrap.connect(ldapHost)
-print 'LDAP Connected'
-print 'Binding to LDAP as: '+ldapBindDN
-ldapwrap.bind(ldapConn, ldapBindDN, ldapBindPass)
-print 'Ldap Bound'
+def initLDAP():
+    global ldapConn
+    global ldapBindDN
+    global ldapBindPass
 
+    print 'Connecting to ldap at '+ldapHost
+    ldapConn = ldapwrap.connect(ldapHost)
+    print 'Binding to LDAP as: '+ldapBindDN
+    ldapwrap.bind(ldapConn, ldapBindDN, ldapBindPass)
+initLDAP()
 
 #login Manager
 login_manager = LoginManager()
@@ -101,6 +105,9 @@ def login():
 
     if request.method == 'POST':
         #search ldap for the username
+        if ldapConn == None:
+            print ldapConn
+            initLDAP()
         ldapuser = ldapwrap.getUser(ldapConn, base_dn, search_filter, request.form['user'])
         if ldapuser != None:
             #found the user, try binding with that dn and supplied password
@@ -114,7 +121,11 @@ def login():
                 UserObj = User(ldapuser['cn'][0], ldapuser['uid'][0], active=True)
                 login_user(UserObj)
 
-                return redirect('/paste/')
+                next = request.args.get('next', '')
+                if next:
+                    return redirect(next)
+                else:
+                    return redirect('/paste/')
             else:
                 return 'Bad password'
         else:
@@ -134,7 +145,8 @@ def load_user(userid):
     global ldapConn
     global search_filter
     global base_dn
-
+    if ldapConn != None:
+        initLDAP()
     ldapuser = ldapwrap.getUser(ldapConn, base_dn, search_filter, userid)
     if ldapuser != None:
         return User(ldapuser['cn'][0], ldapuser['uid'][0], active=True)
@@ -153,5 +165,5 @@ class User(UserMixin):
         return self.active
 
 if __name__ == "__main__":
-    app.debug = True
+    app.debug = False
     app.run(host='0.0.0.0')

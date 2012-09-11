@@ -1,5 +1,12 @@
 import ldap
 
+def initLDAP():
+    print 'Connecting to ldap at '+ldapHost
+    ldapConn = ldapwrap.connect(ldapHost)
+    print 'Binding to LDAP as: '+ldapBindDN
+    ldapwrap.bind(ldapConn, ldapBindDN, ldapBindPass)
+
+
 def connect(host):
     try:
         l = ldap.initialize(host)
